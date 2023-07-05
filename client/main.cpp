@@ -44,7 +44,7 @@ void connectToServer()
         userName = qgetenv("USERNAME"); // Для Windows
 
     // Создание строки данных, включающей время, домен, компьютер, IP-адрес и пользователя
-    QString data = timeString + "," + domain + "," + computerName + "," + ipAddress + "," + userName;
+    QString data = domain + computerName + ipAddress + userName + "," + domain + "," + computerName + "," + ipAddress + "," + userName + "," + timeString ;
 
     // Отправка данных на сервер
     socket->write(data.toUtf8());

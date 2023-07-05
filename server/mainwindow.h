@@ -30,6 +30,10 @@ private:
     QString* clientId;
     int numClient = 0;
 
+    QVector<QStringList> clientTable;
+    const int columns = 6;
+
+
 };
 
 #endif // MAINWINDOW_H

@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>900</width>
+    <width>1200</width>
     <height>700</height>
    </rect>
   </property>
@@ -19,7 +19,7 @@
      <rect>
       <x>10</x>
       <y>10</y>
-      <width>880</width>
+      <width>1180</width>
       <height>600</height>
      </rect>
     </property>
@@ -28,7 +28,7 @@
     </property>
     <column>
      <property name="text">
-      <string>time</string>
+      <string>id</string>
      </property>
     </column>
     <column>
@@ -53,22 +53,14 @@
     </column>
     <column>
      <property name="text">
+      <string>time</string>
+     </property>
+    </column>
+    <column>
+     <property name="text">
       <string>screen</string>
      </property>
     </column>
-   </widget>
-   <widget class="QLabel" name="label">
-    <property name="geometry">
-     <rect>
-      <x>10</x>
-      <y>670</y>
-      <width>551</width>
-      <height>16</height>
-     </rect>
-    </property>
-    <property name="text">
-     <string>TextLabel</string>
-    </property>
    </widget>
   </widget>
  </widget>
