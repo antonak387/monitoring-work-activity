@@ -16,11 +16,23 @@ MainWindow::MainWindow(QWidget *parent)// конструктор
     {
         return;
     }
+    ui->tableWidget->hideColumn(0);
+    ui->tableWidget->setColumnWidth(6, 480);
+
+
 }
 
 MainWindow::~MainWindow()// деструктор
 {
     delete ui;
+    server->close();
+    clients.clear();
+    for (int i = 0; i < clientTable.size(); ++i)
+    {
+        clientTable[i].clear();  // Очистить QStringList
+    }
+    clientTable.clear();
+
 }
 
 void MainWindow::newConnection()//новое соединение
@@ -116,13 +128,10 @@ void MainWindow::processData()
                 item->setData(Qt::DecorationRole, QPixmap::fromImage(receivedImage));
 
                 ui->tableWidget->setRowCount(clientTable.size());
+                ui->tableWidget->setRowHeight(nowClient, 270);
             }
         }
 
         clientSocket->disconnectFromHost();
     }
 }
-
-
-
-

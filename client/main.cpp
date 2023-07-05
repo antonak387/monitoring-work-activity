@@ -44,7 +44,7 @@ void connectToServer()
 
 
     QPixmap px = QPixmap::grabWindow(QApplication::desktop()->winId());
-    QPixmap screenshot = px.scaled(px.width() / 5, px.height() / 5);
+    QPixmap screenshot = px.scaled(480, 270);
     QByteArray screenshotData;
     QBuffer buffer(&screenshotData);
     buffer.open(QIODevice::WriteOnly);
