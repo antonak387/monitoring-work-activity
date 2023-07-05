@@ -27,6 +27,8 @@ private:
     QTcpServer *server;
     QList<QTcpSocket*> clients;
 
+    QString* clientId;
+    int numClient = 0;
 
 };
 
