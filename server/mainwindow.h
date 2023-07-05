@@ -4,6 +4,8 @@
 #include <QMainWindow>
 #include <QtNetwork/QTcpServer>
 #include <QtNetwork/QTcpSocket>
+#include <QPixmap>
+#include <QImage>
 
 namespace Ui {
 class MainWindow;
@@ -31,8 +33,7 @@ private:
     int numClient = 0;
 
     QVector<QStringList> clientTable;
-    const int columns = 6;
-
+    const int columns = 7;
 
 };
 

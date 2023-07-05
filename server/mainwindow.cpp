@@ -14,11 +14,8 @@ MainWindow::MainWindow(QWidget *parent)// конструктор
 
     if (!server->listen(QHostAddress::Any, 1234))
     {
-        qDebug() << "Server could not start!";
         return;
     }
-
-    qDebug() << "Server started!";
 }
 
 MainWindow::~MainWindow()// деструктор
@@ -35,24 +32,34 @@ void MainWindow::newConnection()//новое соединение
 
         connect(clientSocket, &QTcpSocket::readyRead, this, &MainWindow::processData);
         connect(clientSocket, &QTcpSocket::disconnected, clientSocket, &QTcpSocket::deleteLater);
-
-        qDebug() << "New client connected!";
     }
 }
 
 void MainWindow::processData()
 {
+
+    QImage receivedImage;
+
     QTcpSocket *clientSocket = qobject_cast<QTcpSocket*>(sender());
     if (clientSocket)
     {
         QByteArray data = clientSocket->readAll();
-        qDebug() << "Received data from client:" << data;
 
         // Разделение данных
         QList<QByteArray> dataList = data.split(',');
 
-        if (dataList.size() >= 6) // Убираем лишнее
+        QByteArray pngMarker = "\x89PNG";
+        int pngIndex = data.indexOf(pngMarker);
+        QByteArray pngData;
+        if (pngIndex != -1) {
+            pngData = data.mid(pngIndex);
+        }
+        if (dataList.size() >= 7) // Убираем лишнее
         {
+
+            QByteArray imageData = pngData;
+            receivedImage.loadFromData(imageData);
+
             QString id = QString::fromUtf8(dataList[0]);
             int nowClient = -1;
 
@@ -71,6 +78,26 @@ void MainWindow::processData()
                 clientTable[nowClient][3] = QString::fromUtf8(dataList[3]);
                 clientTable[nowClient][4] = QString::fromUtf8(dataList[4]);
                 clientTable[nowClient][5] = QString::fromUtf8(dataList[5]);
+
+                // Загрузка принятого изображения
+
+
+                // Обновление таблицы, включая изображение
+                for (int i = 0; i < columns; i++) {
+                    QTableWidgetItem *item = ui->tableWidget->item(nowClient, i);
+                    if (!item) {
+                        item = new QTableWidgetItem;
+                        ui->tableWidget->setItem(nowClient, i, item);
+                    }
+
+                    if (i == 6) {
+                        // Седьмой столбец - изображение
+                        item->setData(Qt::DecorationRole, QPixmap::fromImage(receivedImage));
+
+                    } else {
+                        item->setText(clientTable[nowClient][i]);
+                    }
+                }
             } else {
                 // Создаем нового клиента и добавляем его в таблицу
                 QStringList newClient;
@@ -78,25 +105,24 @@ void MainWindow::processData()
                           << QString::fromUtf8(dataList[3]) << QString::fromUtf8(dataList[4])
                           << QString::fromUtf8(dataList[5]);
                 clientTable.append(newClient);
+
                 nowClient = clientTable.size() - 1;
 
-                ui->tableWidget->setRowCount(clientTable.size());
-            }
-
-            // Обновление таблицы
-            for (int i = 0; i < columns; i++) {
-                QTableWidgetItem *item = ui->tableWidget->item(nowClient, i);
+                QTableWidgetItem *item = ui->tableWidget->item(nowClient, 6);
                 if (!item) {
                     item = new QTableWidgetItem;
-                    ui->tableWidget->setItem(nowClient, i, item);
+                    ui->tableWidget->setItem(nowClient, 6, item);
                 }
-                item->setText(clientTable[nowClient][i]);
+                item->setData(Qt::DecorationRole, QPixmap::fromImage(receivedImage));
+
+                ui->tableWidget->setRowCount(clientTable.size());
             }
         }
 
         clientSocket->disconnectFromHost();
     }
 }
+
 
 
 
