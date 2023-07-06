@@ -17,7 +17,7 @@ MainWindow::MainWindow(QWidget *parent)// конструктор
         return;
     }
     ui->tableWidget->hideColumn(0);
-    ui->tableWidget->setColumnWidth(6, 480);
+    ui->tableWidget->setColumnWidth(6, 384);
 
 
 }
@@ -120,15 +120,25 @@ void MainWindow::processData()
 
                 nowClient = clientTable.size() - 1;
 
-                QTableWidgetItem *item = ui->tableWidget->item(nowClient, 6);
-                if (!item) {
-                    item = new QTableWidgetItem;
-                    ui->tableWidget->setItem(nowClient, 6, item);
-                }
-                item->setData(Qt::DecorationRole, QPixmap::fromImage(receivedImage));
-
                 ui->tableWidget->setRowCount(clientTable.size());
-                ui->tableWidget->setRowHeight(nowClient, 270);
+                ui->tableWidget->setRowHeight(nowClient, 216);
+
+                for (int i = 0; i < columns; i++) {
+                    QTableWidgetItem *item = ui->tableWidget->item(nowClient, i);
+                    if (!item) {
+                        item = new QTableWidgetItem;
+                        ui->tableWidget->setItem(nowClient, i, item);
+                    }
+
+                    if (i == 6) {
+                        // Седьмой столбец - изображение
+                        item->setData(Qt::DecorationRole, QPixmap::fromImage(receivedImage));
+
+                    } else {
+                        item->setText(clientTable[nowClient][i]);
+                    }
+                }
+
             }
         }
 

